@@ -5,6 +5,7 @@ import com.schedulingSystem.dao.entity.Student;
 import com.schedulingSystem.dao.reposirory.StudentRepository;
 import com.schedulingSystem.model.CourseDto;
 import com.schedulingSystem.model.StudentDto;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +17,14 @@ import java.util.Optional;
 public class StudentService
 {
     public static final String OK = "OK";
+
     public static final String NOK = "NOK";
+
     @Autowired
     StudentRepository studentRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     public List<StudentDto> getAllStudents()
     {
@@ -37,10 +43,9 @@ public class StudentService
         final Optional<Student> byId = studentRepository.findById(id);
         StudentDto studentDto = new StudentDto();
         if (byId.isPresent()){
-            studentDto = createStudentDto(byId.get());
+            studentDto = modelMapper.map(byId.get(), StudentDto.class);
             studentDto.setCourses(mapClassToDto(byId.get().getCourses()));
         }
-
         return studentDto;
     }
 
@@ -77,7 +82,7 @@ public class StudentService
         {
             return NOK;
         }
-        studentRepository.save(createStudent(studentDto));
+        studentRepository.save(modelMapper.map(studentDto, Student.class));
         return OK;
     }
 
@@ -93,12 +98,7 @@ public class StudentService
             return NOK;
         }
         studentRepository.delete(byId.get());
-        Student newStudent = new Student();
-        newStudent.setId(studentDto.getId());
-        newStudent.setFirstName(studentDto.getFirstName());
-        newStudent.setLastName(studentDto.getLastName());
-        newStudent.setCourses(mapDtoToClass(studentDto.getCourses()));
-        studentRepository.save(newStudent);
+        studentRepository.save(modelMapper.map(studentDto, Student.class));
         return OK;
     }
 
@@ -117,25 +117,6 @@ public class StudentService
         return OK;
     }
 
-    private List<Course> mapDtoToClass(List<CourseDto> courseDtos)
-    {
-        List<Course> result = new ArrayList<>();
-
-        if (courseDtos == null)
-        {
-            return result;
-        }
-        courseDtos.forEach( aCourse -> {
-            Course newCourse = new Course();
-            newCourse.setCode(aCourse.getCode());
-            newCourse.setDescription(aCourse.getDescription());
-            newCourse.setTitle(aCourse.getTitle());
-            result.add(newCourse);
-        });
-
-        return result;
-    }
-
     private List<CourseDto> mapClassToDto(List<Course> courses)
     {
         List<CourseDto> result = new ArrayList<>();
@@ -145,43 +126,10 @@ public class StudentService
             return result;
         }
         courses.forEach( aClass -> {
-            CourseDto newCourse = new CourseDto();
-            newCourse.setCode(aClass.getCode());
-            newCourse.setDescription(aClass.getDescription());
-            newCourse.setTitle(aClass.getTitle());
-            result.add(newCourse);
+            result.add(modelMapper.map(aClass, CourseDto.class));
         });
 
         return result;
-    }
-
-
-    private Student createStudent(StudentDto studentDto)
-    {
-        Student newStudent = new Student();
-
-        if (studentDto != null)
-        {
-            newStudent.setId(studentDto.getId());
-            newStudent.setFirstName(studentDto.getFirstName());
-            newStudent.setLastName(studentDto.getLastName());
-        }
-
-        return newStudent;
-    }
-
-    private StudentDto createStudentDto(Student student)
-    {
-        StudentDto newStudent = new StudentDto();
-
-        if (student != null)
-        {
-            newStudent.setId(student.getId());
-            newStudent.setFirstName(student.getFirstName());
-            newStudent.setLastName(student.getLastName());
-        }
-
-        return newStudent;
     }
 
     private List<StudentDto> mapperStudents(List<Student> students)
@@ -193,7 +141,7 @@ public class StudentService
             return result;
         }
         students.forEach( student -> {
-            StudentDto studentDto = createStudentDto(student);
+            StudentDto studentDto = modelMapper.map(student, StudentDto.class);
             studentDto.setCourses(mapClassToDto(student.getCourses()));
             result.add(studentDto);
         });

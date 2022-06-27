@@ -27,16 +27,8 @@ public class CourseService
 
     public List<CourseDto> getAllCourses()
     {
-        List<CourseDto> result = new ArrayList<>();
         final List<Course> all = courseRepository.findAll();
-        if (all == null)
-        {
-            return result;
-        }
-        all.forEach( course -> {
-            result.add(mapCourse(course));
-        });
-        return result;
+        return mapCourses(all);
     }
 
     public CourseDto getCourseByCode(String code)
@@ -64,11 +56,7 @@ public class CourseService
         }
 
         final List<Course> courses = courseRepository.findByTitle(title);
-
-        courses.forEach( course -> {
-            result.add(mapCourse(course));
-        });
-        return result;
+        return mapCourses(courses);
     }
 
 
@@ -147,6 +135,18 @@ public class CourseService
         CourseDto courseDto = modelMapper.map(course, CourseDto.class);
         courseDto.setStudents(mapClassToDto(course.getStudents()));
         return courseDto;
+    }
+
+
+    private List<CourseDto> mapCourses(List<Course> courses)
+    {
+        List<CourseDto> result = new ArrayList<>();
+        if (courses == null)
+        {
+            return result;
+        }
+        courses.forEach( course -> result.add(mapCourse(course)));
+        return result;
     }
 
 }
