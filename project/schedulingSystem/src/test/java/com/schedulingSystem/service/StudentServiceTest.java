@@ -40,7 +40,8 @@ public class StudentServiceTest
     private Student entity = new Student();
 
     @Before
-    public void init() {
+    public void init()
+    {
         MockitoAnnotations.initMocks(this);
         student.setId(1);
         student.setFirstName("name");
@@ -52,7 +53,8 @@ public class StudentServiceTest
     }
 
     @Test
-    public void getAllStudents_CheckStudentsAreRetrived() throws Exception {
+    public void getAllStudents_CheckStudentsAreRetrived()
+    {
 
         List<Student> students = new ArrayList<>();
         students.add(entity);
@@ -68,7 +70,8 @@ public class StudentServiceTest
     }
 
     @Test
-    public void saveStudent_CheckStudentIsSave() throws Exception {
+    public void saveStudent_CheckStudentIsSave()
+    {
 
         when(modelMapper.map(isA(StudentDto.class), any())).thenReturn(entity);
         when(studentRepository.save(isA(Student.class))).thenReturn(entity);
@@ -81,7 +84,8 @@ public class StudentServiceTest
     }
 
     @Test
-    public void updateCourse_CheckStudentIsSave() throws Exception {
+    public void updateCourse_CheckStudentIsSave()
+    {
 
         when(studentRepository.findById(isA(Integer.class))).thenReturn(Optional.of(entity));
         when(modelMapper.map(isA(StudentDto.class), any())).thenReturn(entity);
@@ -97,7 +101,8 @@ public class StudentServiceTest
     }
 
     @Test
-    public void deleteStudent_CheckStudentIsDeleted() throws Exception {
+    public void deleteStudent_CheckStudentIsDeleted()
+    {
 
         when(studentRepository.findById(isA(Integer.class))).thenReturn(Optional.of(entity));
 

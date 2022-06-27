@@ -23,37 +23,44 @@ public class CourseController
     CourseService service;
 
     @GetMapping
-    public List<CourseDto> getAllCourses() {
+    public List<CourseDto> getAllCourses()
+    {
         return service.getAllCourses();
     }
 
     @GetMapping("/{code}")
-    public CourseDto getCourseByCode(@PathVariable String code) {
+    public CourseDto getCourseByCode(@PathVariable String code)
+    {
         return service.getCourseByCode(code);
     }
 
    @GetMapping("/title/{title}")
-    public List<CourseDto> getCourseByTitle(@PathVariable String title) {
+    public List<CourseDto> getCourseByTitle(@PathVariable String title)
+   {
         return service.getStudentByTitle(title);
     }
 
     @GetMapping("/{code}/students")
-    public List<StudentDto> getStudentByCourse(@PathVariable String code) {
+    public List<StudentDto> getStudentByCourse(@PathVariable String code)
+    {
         return service.getStudentByCourse(code);
     }
 
     @PostMapping
-    public String postCourse(@RequestBody CourseDto course) {
+    public String postCourse(@RequestBody CourseDto course)
+    {
         return service.saveCourse(course);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteCourse(@PathVariable String id) {
+    public String deleteCourse(@PathVariable String id)
+    {
         return service.deleteCourse(id);
     }
 
     @PutMapping
-    public String putCourse(@RequestBody CourseDto course) {
+    public String putCourse(@RequestBody CourseDto course)
+    {
         return service.updateCourse(course);
     }
 }

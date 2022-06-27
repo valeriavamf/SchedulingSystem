@@ -29,37 +29,44 @@ public class StudentController
     }
 
     @GetMapping("/{id}")
-    public StudentDto getStudentById(@PathVariable Integer id) {
+    public StudentDto getStudentById(@PathVariable Integer id)
+    {
         return service.getStudentById(id);
     }
 
     @GetMapping("/name/{name}")
-    public List<StudentDto> getStudentByName(@PathVariable String name) {
+    public List<StudentDto> getStudentByName(@PathVariable String name)
+    {
         return service.getStudentByName(name);
     }
 
     @GetMapping("/lastname/{lastname}")
-    public List<StudentDto> getStudentByLastName(@PathVariable String lastname) {
+    public List<StudentDto> getStudentByLastName(@PathVariable String lastname)
+    {
         return service.getStudentByLastName(lastname);
     }
 
     @GetMapping("/{id}/courses")
-    public List<CourseDto> getCoursesByStudentId(@PathVariable Integer id) {
+    public List<CourseDto> getCoursesByStudentId(@PathVariable Integer id)
+    {
         return service.getCoursesByStudent(id);
     }
 
     @PostMapping
-    public String postStudent(@RequestBody StudentDto student) {
+    public String postStudent(@RequestBody StudentDto student)
+    {
         return service.saveStudent(student);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteStudent(@PathVariable Integer id) {
+    public String deleteStudent(@PathVariable Integer id)
+    {
         return service.deleteStudent(id);
     }
 
     @PutMapping
-    public String putStudent(@RequestBody StudentDto student) {
+    public String putStudent(@RequestBody StudentDto student)
+    {
         return service.updateStudent(student);
     }
 }

@@ -50,7 +50,8 @@ public class CourseServiceTest
     }
 
     @Test
-    public void getAllCourses_CheckCoursesAreRetrived() throws Exception {
+    public void getAllCourses_CheckCoursesAreRetrived()
+    {
 
         List<Course> courses = new ArrayList<>();
         courses.add(entity);
@@ -66,7 +67,8 @@ public class CourseServiceTest
     }
 
     @Test
-    public void saveCourse_CheckCourseIsSave() throws Exception {
+    public void saveCourse_CheckCourseIsSave()
+    {
 
         when(modelMapper.map(isA(CourseDto.class), any())).thenReturn(entity);
         when(courseRepository.save(isA(Course.class))).thenReturn(entity);
@@ -79,7 +81,8 @@ public class CourseServiceTest
     }
 
     @Test
-    public void updateCourse_CheckCourseIsSave() throws Exception {
+    public void updateCourse_CheckCourseIsSave()
+    {
 
         when(courseRepository.findById(isA(String.class))).thenReturn(Optional.of(entity));
         when(modelMapper.map(isA(CourseDto.class), any())).thenReturn(entity);
@@ -95,7 +98,8 @@ public class CourseServiceTest
     }
 
     @Test
-    public void deleteCourse_CheckCourseIsSave() throws Exception {
+    public void deleteCourse_CheckCourseIsSave()
+    {
 
         when(courseRepository.findById(isA(String.class))).thenReturn(Optional.of(entity));
 
