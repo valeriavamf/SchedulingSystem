@@ -41,7 +41,7 @@ public class CourseService
         final Optional<Course> byId = courseRepository.findById(code);
         CourseDto courseDto = new CourseDto();
         if (byId.isPresent()){
-            courseDto = mapCourse(byId.get());
+            courseDto = mapCourseToDto(byId.get());
         }
 
         return courseDto;
@@ -115,7 +115,7 @@ public class CourseService
         return OK;
     }
 
-    private List<StudentDto> mapClassToDto(List<Student> students)
+    private List<StudentDto> mapStudentToDto(List<Student> students)
     {
         List<StudentDto> result = new ArrayList<>();
 
@@ -130,10 +130,10 @@ public class CourseService
         return result;
     }
 
-    private CourseDto mapCourse(Course course)
+    private CourseDto mapCourseToDto(Course course)
     {
         CourseDto courseDto = modelMapper.map(course, CourseDto.class);
-        courseDto.setStudents(mapClassToDto(course.getStudents()));
+        courseDto.setStudents(mapStudentToDto(course.getStudents()));
         return courseDto;
     }
 
@@ -145,7 +145,7 @@ public class CourseService
         {
             return result;
         }
-        courses.forEach( course -> result.add(mapCourse(course)));
+        courses.forEach( course -> result.add(mapCourseToDto(course)));
         return result;
     }
 
