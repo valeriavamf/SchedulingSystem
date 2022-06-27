@@ -32,7 +32,7 @@ public class CourseController
         return service.getCourseByCode(code);
     }
 
-    @GetMapping("/title/{title}")
+   @GetMapping("/title/{title}")
     public List<CourseDto> getCourseByTitle(@PathVariable String title) {
         return service.getStudentByTitle(title);
     }

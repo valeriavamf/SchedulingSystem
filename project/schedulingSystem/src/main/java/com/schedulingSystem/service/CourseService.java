@@ -34,16 +34,10 @@ public class CourseService
             return result;
         }
         all.forEach( course -> {
-            CourseDto courseDto = new CourseDto();
-            courseDto.setCode(course.getCode());
-            courseDto.setDescription(course.getDescription());
-            courseDto.setTitle(course.getTitle());
-            courseDto.setStudents(mapClassToDto(course.getStudents()));
-            result.add(courseDto);
+            result.add(mapCourse(course));
         });
         return result;
     }
-
 
     public CourseDto getCourseByCode(String code)
     {
@@ -55,11 +49,40 @@ public class CourseService
         final Optional<Course> byId = courseRepository.findById(code);
         CourseDto courseDto = new CourseDto();
         if (byId.isPresent()){
-            courseDto = createStudentDto(byId.get());
-            courseDto.setCourses(mapClassToDto(byId.get().getCourses()));
+            courseDto = mapCourse(byId.get());
         }
 
         return courseDto;
+    }
+
+    public List<CourseDto> getStudentByTitle(String title)
+    {
+        List<CourseDto> result = new ArrayList<>();
+        if (title == null)
+        {
+            return null;
+        }
+
+        final List<Course> courses = courseRepository.findByTitle(title);
+
+        courses.forEach( course -> {
+            result.add(mapCourse(course));
+        });
+        return result;
+    }
+
+
+    public List<StudentDto> getStudentByCourse(String code)
+    {
+        final CourseDto courseByCode = getCourseByCode(code);
+        if (courseByCode == null)
+        {
+            return new ArrayList<>();
+        }
+        else
+        {
+            return courseByCode.getStudents();
+        }
     }
 
     public String saveCourse(CourseDto courseDto)
@@ -68,7 +91,7 @@ public class CourseService
         {
             return NOK;
         }
-        courseRepository.save(createCourse(courseDto));
+        courseRepository.save(modelMapper.map(courseDto, Course.class));
         return OK;
     }
 
@@ -84,8 +107,7 @@ public class CourseService
             return NOK;
         }
         courseRepository.delete(byId.get());
-        Course newCourse = createCourse(courseDto);
-        newCourse.setStudents(mapDtoToClass(courseDto.getStudents()));
+        Course newCourse = modelMapper.map(courseDto, Course.class);
         courseRepository.save(newCourse);
         return OK;
     }
@@ -105,25 +127,6 @@ public class CourseService
         return OK;
     }
 
-    private List<Student> mapDtoToClass(List<StudentDto> students)
-    {
-        List<Student> result = new ArrayList<>();
-
-        if (students == null)
-        {
-            return result;
-        }
-        students.forEach( aStudent -> {
-            Student student = new Student();
-            student.setId(aStudent.getId());
-            student.setFirstName(aStudent.getFirstName());
-            student.setLastName(aStudent.getLastName());
-            result.add(student);
-        });
-
-        return result;
-    }
-
     private List<StudentDto> mapClassToDto(List<Student> students)
     {
         List<StudentDto> result = new ArrayList<>();
@@ -133,23 +136,17 @@ public class CourseService
             return result;
         }
         students.forEach( aStudent -> {
-            StudentDto student = new StudentDto();
-            student.setId(aStudent.getId());
-            student.setFirstName(aStudent.getFirstName());
-            student.setLastName(aStudent.getLastName());
-            result.add(student);
+            result.add(modelMapper.map(aStudent, StudentDto.class));
         });
 
         return result;
     }
 
-    private Course createCourse(CourseDto courseDto)
+    private CourseDto mapCourse(Course course)
     {
-        Course newCourse = new Course();
-        newCourse.setCode(courseDto.getCode());
-        newCourse.setDescription(courseDto.getDescription());
-        newCourse.setTitle(courseDto.getTitle());
-        return newCourse;
+        CourseDto courseDto = modelMapper.map(course, CourseDto.class);
+        courseDto.setStudents(mapClassToDto(course.getStudents()));
+        return courseDto;
     }
 
 }
