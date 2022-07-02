@@ -17,7 +17,7 @@ import static com.schedulingSystem.service.StudentService.NOK;
 import static com.schedulingSystem.service.StudentService.OK;
 
 @Service
-public class CourseService
+public class CourseService extends AbstractService
 {
     @Autowired
     CourseRepository courseRepository;
@@ -27,8 +27,8 @@ public class CourseService
 
     public List<CourseDto> getAllCourses()
     {
-        final List<Course> all = courseRepository.findAll();
-        return mapCourses(all);
+        final List<Course> courses = courseRepository.findAll();
+        return mapCourses(courses);
     }
 
     public CourseDto getCourseByCode(String code)
@@ -38,10 +38,10 @@ public class CourseService
             return null;
         }
 
-        final Optional<Course> byId = courseRepository.findById(code);
+        final Optional<Course> course = courseRepository.findById(code);
         CourseDto courseDto = new CourseDto();
-        if (byId.isPresent()){
-            courseDto = mapCourseToDto(byId.get());
+        if (course.isPresent()){
+            courseDto = mapCourseToDto(course.get());
         }
 
         return courseDto;
@@ -49,7 +49,6 @@ public class CourseService
 
     public List<CourseDto> getStudentByTitle(String title)
     {
-        List<CourseDto> result = new ArrayList<>();
         if (title == null)
         {
             return null;
@@ -89,12 +88,12 @@ public class CourseService
         {
             return NOK;
         }
-        final Optional<Course> byId = courseRepository.findById(courseDto.getCode());
-        if (!byId.isPresent())
+        final Optional<Course> course = courseRepository.findById(courseDto.getCode());
+        if (!course.isPresent())
         {
             return NOK;
         }
-        courseRepository.delete(byId.get());
+        courseRepository.delete(course.get());
         Course newCourse = modelMapper.map(courseDto, Course.class);
         courseRepository.save(newCourse);
         return OK;
@@ -106,47 +105,26 @@ public class CourseService
         {
             return NOK;
         }
-        final Optional<Course> byId = courseRepository.findById(id);
-        if (!byId.isPresent())
+        final Optional<Course> course = courseRepository.findById(id);
+        if (!course.isPresent())
         {
             return NOK;
         }
-        courseRepository.delete(byId.get());
+        courseRepository.delete(course.get());
         return OK;
     }
 
-    private List<StudentDto> mapStudentToDto(List<Student> students)
-    {
-        List<StudentDto> result = new ArrayList<>();
-
-        if (students == null)
-        {
-            return result;
-        }
-        students.forEach( aStudent -> {
-            result.add(modelMapper.map(aStudent, StudentDto.class));
-        });
-
-        return result;
-    }
-
-    private CourseDto mapCourseToDto(Course course)
+    @Override
+    protected CourseDto mapCourseToDto(Course course)
     {
         CourseDto courseDto = modelMapper.map(course, CourseDto.class);
-        courseDto.setStudents(mapStudentToDto(course.getStudents()));
+        courseDto.setStudents(mapperStudents(course.getStudents()));
         return courseDto;
     }
 
-
-    private List<CourseDto> mapCourses(List<Course> courses)
+    @Override
+    protected StudentDto mapStudentToDto(Student student)
     {
-        List<CourseDto> result = new ArrayList<>();
-        if (courses == null)
-        {
-            return result;
-        }
-        courses.forEach( course -> result.add(mapCourseToDto(course)));
-        return result;
+        return modelMapper.map(student, StudentDto.class);
     }
-
 }
