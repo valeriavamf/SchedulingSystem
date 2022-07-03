@@ -59,7 +59,7 @@ public class CourseServiceTest
         when(courseRepository.findAll()).thenReturn(courses);
         when(modelMapper.map(isA(Course.class), any())).thenReturn(course);
 
-        final List<CourseDto> allCourses = service.getAllCourses();
+        final List<CourseDto> allCourses = service.getAllCourses(null);
 
         assertNotNull(allCourses);
         assertEquals(allCourses.size(), 1);

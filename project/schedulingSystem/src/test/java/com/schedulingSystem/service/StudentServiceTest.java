@@ -1,9 +1,7 @@
 package com.schedulingSystem.service;
 
-import com.schedulingSystem.dao.entity.Course;
 import com.schedulingSystem.dao.entity.Student;
 import com.schedulingSystem.dao.reposirory.StudentRepository;
-import com.schedulingSystem.model.CourseDto;
 import com.schedulingSystem.model.StudentDto;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,7 +60,7 @@ public class StudentServiceTest
         when(studentRepository.findAll()).thenReturn(students);
         when(modelMapper.map(isA(Student.class), any())).thenReturn(student);
 
-        final List<StudentDto> allStudents = service.getAllStudents();
+        final List<StudentDto> allStudents = service.getAllStudents(null);
 
         assertNotNull(allStudents);
         assertEquals(allStudents.size(), 1);

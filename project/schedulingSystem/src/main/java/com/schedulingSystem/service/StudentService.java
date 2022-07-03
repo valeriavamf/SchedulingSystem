@@ -7,10 +7,12 @@ import com.schedulingSystem.model.CourseDto;
 import com.schedulingSystem.model.StudentDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -20,16 +22,29 @@ public class StudentService extends AbstractService
 
     public static final String NOK = "NOK";
 
+    private static final String ID = "id";
+
+    private static final String NAME = "name";
+
+    private static final String LAST_NAME = "LAST_NAME";
+
     @Autowired
     StudentRepository studentRepository;
 
     @Autowired
     private ModelMapper modelMapper;
 
-    public List<StudentDto> getAllStudents()
+    public List<StudentDto> getAllStudents(Map<String, String> criteria)
     {
-        final List<Student> students = studentRepository.findAll();
-
+        List<Student> students;
+        Student student = new Student();
+        if (criteria != null)
+        {
+            student.setId(criteria.containsKey(ID) ? Integer.getInteger(criteria.get(ID)) : null);
+            student.setLastName(criteria.get(NAME));
+            student.setFirstName(criteria.get(LAST_NAME));
+        }
+        students = studentRepository.findAll(Example.of(student));
         return mapperStudents(students);
     }
 

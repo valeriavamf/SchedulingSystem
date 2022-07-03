@@ -7,10 +7,12 @@ import com.schedulingSystem.model.CourseDto;
 import com.schedulingSystem.model.StudentDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.schedulingSystem.service.StudentService.NOK;
@@ -19,15 +21,30 @@ import static com.schedulingSystem.service.StudentService.OK;
 @Service
 public class CourseService extends AbstractService
 {
+    private static final String CODE = "code";
+
+    private static final String DESCRIPTION = "description";
+
+    private static final String TITLE = "title";
+
     @Autowired
     CourseRepository courseRepository;
 
     @Autowired
     private ModelMapper modelMapper;
 
-    public List<CourseDto> getAllCourses()
+    public List<CourseDto> getAllCourses(Map<String, String> criteria)
     {
-        final List<Course> courses = courseRepository.findAll();
+        List<Course> courses;
+        Course course = new Course();
+        if (criteria != null)
+        {
+            course.setCode(criteria.get(CODE));
+            course.setDescription(criteria.get(DESCRIPTION));
+            course.setTitle(criteria.get(TITLE));
+        }
+        courses = courseRepository.findAll(Example.of(course));
+
         return mapCourses(courses);
     }
 

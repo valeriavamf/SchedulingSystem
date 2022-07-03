@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/schedulingSystem/course")
@@ -23,9 +25,9 @@ public class CourseController
     CourseService service;
 
     @GetMapping
-    public List<CourseDto> getAllCourses()
+    public List<CourseDto> getAllCourses(@RequestParam Map<String, String> criteria)
     {
-        return service.getAllCourses();
+        return service.getAllCourses(criteria);
     }
 
     @GetMapping("/{code}")
