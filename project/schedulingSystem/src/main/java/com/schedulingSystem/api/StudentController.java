@@ -1,10 +1,9 @@
 package com.schedulingSystem.api;
 
-import com.schedulingSystem.dao.entity.Student;
-import com.schedulingSystem.model.CourseDto;
 import com.schedulingSystem.model.StudentDto;
 import com.schedulingSystem.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,48 +24,48 @@ public class StudentController
     StudentService service;
 
     @GetMapping
-    public List<StudentDto> getStudent(@RequestParam Map<String, String> criteria) {
+    public ResponseEntity getStudent(@RequestParam Map<String, String> criteria) {
         return service.getAllStudents(criteria);
     }
 
     @GetMapping("/{id}")
-    public StudentDto getStudentById(@PathVariable Integer id)
+    public ResponseEntity getStudentById(@PathVariable Integer id)
     {
         return service.getStudentById(id);
     }
 
     @GetMapping("/name/{name}")
-    public List<StudentDto> getStudentByName(@PathVariable String name)
+    public ResponseEntity getStudentByName(@PathVariable String name)
     {
         return service.getStudentByName(name);
     }
 
     @GetMapping("/lastname/{lastname}")
-    public List<StudentDto> getStudentByLastName(@PathVariable String lastname)
+    public ResponseEntity getStudentByLastName(@PathVariable String lastname)
     {
         return service.getStudentByLastName(lastname);
     }
 
     @GetMapping("/{id}/courses")
-    public List<CourseDto> getCoursesByStudentId(@PathVariable Integer id)
+    public ResponseEntity getCoursesByStudentId(@PathVariable Integer id)
     {
         return service.getCoursesByStudent(id);
     }
 
     @PostMapping
-    public String postStudent(@RequestBody StudentDto student)
+    public ResponseEntity postStudent(@RequestBody StudentDto student)
     {
         return service.saveStudent(student);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteStudent(@PathVariable Integer id)
+    public ResponseEntity deleteStudent(@PathVariable Integer id)
     {
         return service.deleteStudent(id);
     }
 
     @PutMapping
-    public String putStudent(@RequestBody StudentDto student)
+    public ResponseEntity putStudent(@RequestBody StudentDto student)
     {
         return service.updateStudent(student);
     }

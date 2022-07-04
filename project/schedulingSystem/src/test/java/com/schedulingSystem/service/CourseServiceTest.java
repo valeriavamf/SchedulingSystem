@@ -9,6 +9,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Example;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,10 +59,12 @@ public class CourseServiceTest
         List<Course> courses = new ArrayList<>();
         courses.add(entity);
 
-        when(courseRepository.findAll()).thenReturn(courses);
+        when(courseRepository.findAll((Example<Course>) any())).thenReturn(courses);
         when(modelMapper.map(isA(Course.class), any())).thenReturn(course);
 
-        final List<CourseDto> allCourses = service.getAllCourses(null);
+        final ResponseEntity responseEntity = service.getAllCourses(null);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        final List<CourseDto> allCourses = (List<CourseDto>) responseEntity.getBody();
 
         assertNotNull(allCourses);
         assertEquals(allCourses.size(), 1);
@@ -74,9 +79,9 @@ public class CourseServiceTest
         when(courseRepository.save(isA(Course.class))).thenReturn(entity);
 
 
-        final String saveCourse = service.saveCourse(course);
+        final ResponseEntity responseEntity = service.saveCourse(course);
 
-        assertEquals(saveCourse,"OK");
+        assertEquals(responseEntity.getStatusCode().value(),HttpStatus.OK.value());
 
     }
 
@@ -89,11 +94,11 @@ public class CourseServiceTest
         when(courseRepository.save(isA(Course.class))).thenReturn(entity);
 
 
-        final String saveCourse = service.updateCourse(course);
+        final ResponseEntity responseEntity = service.updateCourse(course);
 
         verify(courseRepository, times(1)).delete(isA(Course.class));
 
-        assertEquals(saveCourse,"OK");
+        assertEquals(responseEntity.getStatusCode().value(),HttpStatus.OK.value());
 
     }
 
@@ -103,11 +108,11 @@ public class CourseServiceTest
 
         when(courseRepository.findById(isA(String.class))).thenReturn(Optional.of(entity));
 
-        final String saveCourse = service.deleteCourse("code1");
+        final ResponseEntity responseEntity = service.deleteCourse("code1");
 
         verify(courseRepository, times(1)).delete(isA(Course.class));
 
-        assertEquals(saveCourse,"OK");
+        assertEquals(responseEntity.getStatusCode().value(),HttpStatus.OK.value());
 
     }
 }

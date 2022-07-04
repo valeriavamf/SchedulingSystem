@@ -9,6 +9,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Example;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,13 +60,13 @@ public class StudentServiceTest
         List<Student> students = new ArrayList<>();
         students.add(entity);
 
-        when(studentRepository.findAll()).thenReturn(students);
+        when(studentRepository.findAll((Example<Student>) any())).thenReturn(students);
         when(modelMapper.map(isA(Student.class), any())).thenReturn(student);
 
-        final List<StudentDto> allStudents = service.getAllStudents(null);
-
-        assertNotNull(allStudents);
-        assertEquals(allStudents.size(), 1);
+        final ResponseEntity allStudents = service.getAllStudents(null);
+        final List<Student> studentList = (List<Student>) allStudents.getBody();
+        assertNotNull(studentList);
+        assertEquals(studentList.size(), 1);
 
     }
 
@@ -75,9 +78,9 @@ public class StudentServiceTest
         when(studentRepository.save(isA(Student.class))).thenReturn(entity);
 
 
-        final String saveStudent = service.saveStudent(student);
+        final ResponseEntity responseEntity = service.saveStudent(student);
 
-        assertEquals(saveStudent,"OK");
+        assertEquals(responseEntity.getStatusCode().value(), HttpStatus.OK.value());
 
     }
 
@@ -90,11 +93,11 @@ public class StudentServiceTest
         when(studentRepository.save(isA(Student.class))).thenReturn(entity);
 
 
-        final String updateStudent = service.updateStudent(student);
+        final ResponseEntity responseEntity = service.updateStudent(student);
 
         verify(studentRepository, times(1)).delete(isA(Student.class));
 
-        assertEquals(updateStudent,"OK");
+        assertEquals(responseEntity.getStatusCode().value(),HttpStatus.OK.value());
 
     }
 
@@ -104,11 +107,11 @@ public class StudentServiceTest
 
         when(studentRepository.findById(isA(Integer.class))).thenReturn(Optional.of(entity));
 
-        final String deletedStudent = service.deleteStudent(1);
+        final ResponseEntity responseEntity = service.deleteStudent(1);
 
         verify(studentRepository, times(1)).delete(isA(Student.class));
 
-        assertEquals(deletedStudent,"OK");
+        assertEquals(responseEntity.getStatusCode().value(),HttpStatus.OK.value());
 
     }
 }

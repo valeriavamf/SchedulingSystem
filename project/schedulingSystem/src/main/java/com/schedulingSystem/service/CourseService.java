@@ -8,15 +8,14 @@ import com.schedulingSystem.model.StudentDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import static com.schedulingSystem.service.StudentService.NOK;
-import static com.schedulingSystem.service.StudentService.OK;
 
 @Service
 public class CourseService extends AbstractService
@@ -33,9 +32,8 @@ public class CourseService extends AbstractService
     @Autowired
     private ModelMapper modelMapper;
 
-    public List<CourseDto> getAllCourses(Map<String, String> criteria)
+    public ResponseEntity getAllCourses(Map<String, String> criteria)
     {
-        List<Course> courses;
         Course course = new Course();
         if (criteria != null)
         {
@@ -43,96 +41,125 @@ public class CourseService extends AbstractService
             course.setDescription(criteria.get(DESCRIPTION));
             course.setTitle(criteria.get(TITLE));
         }
-        courses = courseRepository.findAll(Example.of(course));
 
-        return mapCourses(courses);
+        try
+        {
+            List<Course> courses = courseRepository.findAll(Example.of(course));
+            return new ResponseEntity(mapCourses(courses), HttpStatus.OK);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return internalErrorEntity;
+        }
     }
 
-    public CourseDto getCourseByCode(String code)
+    public ResponseEntity getCourseByCode(String code)
     {
         if (code == null)
         {
-            return null;
+            return badRequestEntity;
         }
 
-        final Optional<Course> course = courseRepository.findById(code);
-        CourseDto courseDto = new CourseDto();
-        if (course.isPresent()){
-            courseDto = mapCourseToDto(course.get());
+        try
+        {
+            final Optional<Course> course = courseRepository.findById(code);
+            if (course.isPresent()){
+                return new ResponseEntity(mapCourseToDto(course.get()), HttpStatus.OK);
+            }
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return internalErrorEntity;
         }
 
-        return courseDto;
+        return ResponseEntity.of(Optional.of(new CourseDto()));
     }
 
-    public List<CourseDto> getStudentByTitle(String title)
+    public ResponseEntity getStudentByTitle(String title)
     {
         if (title == null)
         {
-            return null;
+            return badRequestEntity;
         }
 
-        final List<Course> courses = courseRepository.findByTitle(title);
-        return mapCourses(courses);
+        try
+        {
+            final List<Course> courses = courseRepository.findByTitle(title);
+            return new ResponseEntity(mapCourses(courses), HttpStatus.OK) ;
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return internalErrorEntity;
+        }
     }
 
 
-    public List<StudentDto> getStudentByCourse(String code)
+    public ResponseEntity getStudentByCourse(String code)
     {
-        final CourseDto courseByCode = getCourseByCode(code);
-        if (courseByCode == null)
+        final ResponseEntity responseEntity = getCourseByCode(code);
+        if (responseEntity.getStatusCode().value() != HttpStatus.OK.value())
         {
-            return new ArrayList<>();
+            return responseEntity;
+        }
+        CourseDto course = (CourseDto) responseEntity.getBody();
+        return new ResponseEntity(course.getStudents(), HttpStatus.OK);
+
+    }
+
+    public ResponseEntity saveCourse(CourseDto courseDto)
+    {
+        if (courseDto == null)
+        {
+            return badRequestEntity;
+        }
+        try
+        {
+            courseRepository.save(modelMapper.map(courseDto, Course.class));
+        }
+        catch (JpaSystemException | IllegalArgumentException ex)
+        {
+            return internalErrorEntity;
+        }
+        return ResponseEntity.ok(OK);
+    }
+
+    public ResponseEntity updateCourse(CourseDto courseDto)
+    {
+        if (courseDto == null || courseDto.getCode() == null)
+        {
+            return badRequestEntity;
+        }
+
+        final ResponseEntity deleteEntity = deleteCourse(courseDto.getCode());
+        if (deleteEntity.getStatusCode().value() == HttpStatus.OK.value())
+        {
+            return saveCourse(courseDto);
+        }
+
+        return ResponseEntity.ok(OK);
+    }
+
+    public ResponseEntity deleteCourse(String code)
+    {
+        if (code == null)
+        {
+            return badRequestEntity;
+        }
+        Optional<Course> course = courseRepository.findById(code);
+        if (course.isPresent())
+        {
+            courseRepository.delete(course.get());
+            return ResponseEntity.ok(OK);
         }
         else
         {
-            return courseByCode.getStudents();
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
-    }
 
-    public String saveCourse(CourseDto courseDto)
-    {
-        if (courseDto == null)
-        {
-            return NOK;
-        }
-        courseRepository.save(modelMapper.map(courseDto, Course.class));
-        return OK;
-    }
-
-    public String updateCourse(CourseDto courseDto)
-    {
-        if (courseDto == null)
-        {
-            return NOK;
-        }
-        final Optional<Course> course = courseRepository.findById(courseDto.getCode());
-        if (!course.isPresent())
-        {
-            return NOK;
-        }
-        courseRepository.delete(course.get());
-        Course newCourse = modelMapper.map(courseDto, Course.class);
-        courseRepository.save(newCourse);
-        return OK;
-    }
-
-    public String deleteCourse(String id)
-    {
-        if (id == null)
-        {
-            return NOK;
-        }
-        final Optional<Course> course = courseRepository.findById(id);
-        if (!course.isPresent())
-        {
-            return NOK;
-        }
-        courseRepository.delete(course.get());
-        return OK;
     }
 
     @Override
-    protected CourseDto mapCourseToDto(Course course)
+    protected CourseDto mapCourseToDto(Course course) throws IllegalArgumentException
     {
         CourseDto courseDto = modelMapper.map(course, CourseDto.class);
         courseDto.setStudents(mapperStudents(course.getStudents()));
@@ -140,7 +167,7 @@ public class CourseService extends AbstractService
     }
 
     @Override
-    protected StudentDto mapStudentToDto(Student student)
+    protected StudentDto mapStudentToDto(Student student) throws IllegalArgumentException
     {
         return modelMapper.map(student, StudentDto.class);
     }
