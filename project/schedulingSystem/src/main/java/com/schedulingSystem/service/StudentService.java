@@ -7,18 +7,24 @@ import com.schedulingSystem.model.CourseDto;
 import com.schedulingSystem.model.StudentDto;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
-public class StudentService
+public class StudentService extends AbstractService
 {
-    public static final String OK = "OK";
+    private static final String ID = "id";
 
-    public static final String NOK = "NOK";
+    private static final String NAME = "name";
+
+    private static final String LAST_NAME = "lastname";
 
     @Autowired
     StudentRepository studentRepository;
@@ -26,126 +32,156 @@ public class StudentService
     @Autowired
     private ModelMapper modelMapper;
 
-    public List<StudentDto> getAllStudents()
+    public ResponseEntity getAllStudents(Map<String, String> criteria)
     {
-        final List<Student> all = studentRepository.findAll();
-
-        return mapperStudents(all);
+        Student student = new Student();
+        if (criteria != null)
+        {
+            student.setId(criteria.containsKey(ID) ? Integer.getInteger(criteria.get(ID)) : null);
+            student.setLastName(criteria.get(NAME));
+            student.setFirstName(criteria.get(LAST_NAME));
+        }
+        try
+        {
+            List<Student> students = studentRepository.findAll(Example.of(student));
+            return new ResponseEntity(mapperStudents(students), HttpStatus.OK);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return internalErrorEntity;
+        }
     }
 
-    public StudentDto getStudentById(Integer id)
+    public ResponseEntity getStudentById(Integer id)
     {
         if (id == null)
         {
-            return null;
+            return badRequestEntity;
         }
 
-        final Optional<Student> byId = studentRepository.findById(id);
-        StudentDto studentDto = new StudentDto();
-        if (byId.isPresent()){
-            studentDto = modelMapper.map(byId.get(), StudentDto.class);
-            studentDto.setCourses(mapClassToDto(byId.get().getCourses()));
-        }
-        return studentDto;
-    }
-
-    public List<StudentDto> getStudentByName(String name)
-    {
-        final List<Student> all = studentRepository.findByFirstName(name);
-
-        return mapperStudents(all);
-    }
-
-    public List<StudentDto> getStudentByLastName(String lastname)
-    {
-        final List<Student> all = studentRepository.findByLastName(lastname);
-
-        return mapperStudents(all);
-    }
-
-    public List<CourseDto> getCoursesByStudent(Integer id)
-    {
-        final StudentDto studentById = getStudentById(id);
-        if (studentById == null)
+        try
         {
-            return new ArrayList<>();
+            final Optional<Student> student = studentRepository.findById(id);
+            if (student.isPresent()){
+                return new ResponseEntity(mapStudentToDto(student.get()), HttpStatus.OK);
+            }
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return internalErrorEntity;
+        }
+        return ResponseEntity.of(Optional.of(new StudentDto()));
+    }
+
+    public ResponseEntity getStudentByName(String name)
+    {
+        if (name == null)
+        {
+            return badRequestEntity;
+        }
+
+        try
+        {
+            final List<Student> students = studentRepository.findByFirstName(name);
+            return new ResponseEntity(mapperStudents(students), HttpStatus.OK) ;
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return internalErrorEntity;
+        }
+    }
+
+    public ResponseEntity getStudentByLastName(String lastname)
+    {
+        if (lastname == null)
+        {
+            return badRequestEntity;
+        }
+
+        try
+        {
+            final List<Student> students = studentRepository.findByLastName(lastname);
+            return new ResponseEntity(mapperStudents(students), HttpStatus.OK) ;
+        }
+        catch (IllegalArgumentException ex)
+        {
+            return internalErrorEntity;
+        }
+
+    }
+
+    public ResponseEntity getCoursesByStudent(Integer id)
+    {
+        final ResponseEntity responseEntity = getStudentById(id);
+        if (responseEntity.getStatusCode().value() != HttpStatus.OK.value())
+        {
+            return responseEntity;
+        }
+        StudentDto students = (StudentDto) responseEntity.getBody();
+        return new ResponseEntity(students.getCourses(), HttpStatus.OK);
+    }
+
+    public ResponseEntity saveStudent(StudentDto studentDto)
+    {
+        if (studentDto == null)
+        {
+            return badRequestEntity;
+        }
+        try
+        {
+            studentRepository.save(modelMapper.map(studentDto, Student.class));
+        }
+        catch (JpaSystemException | IllegalArgumentException ex)
+        {
+            return internalErrorEntity;
+        }
+        return ResponseEntity.ok(OK);
+    }
+
+    public ResponseEntity updateStudent(StudentDto studentDto)
+    {
+        if (studentDto == null || studentDto.getId() == null)
+        {
+            return badRequestEntity;
+        }
+        final ResponseEntity deleteEntity = deleteStudent(studentDto.getId());
+        if (deleteEntity.getStatusCode().value() == HttpStatus.OK.value())
+        {
+            return saveStudent(studentDto);
+        }
+
+        return ResponseEntity.ok(OK);
+    }
+
+    public ResponseEntity deleteStudent(Integer id)
+    {
+        if (id == null)
+        {
+            return badRequestEntity;
+        }
+        final Optional<Student> student = studentRepository.findById(id);
+        if (student.isPresent())
+        {
+            studentRepository.delete(student.get());
+            return ResponseEntity.ok(OK);
         }
         else
         {
-            return studentById.getCourses();
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
     }
 
-    public String saveStudent(StudentDto studentDto)
+    @Override
+    protected StudentDto mapStudentToDto(Student student) throws IllegalArgumentException
     {
-        if (studentDto == null)
-        {
-            return NOK;
-        }
-        studentRepository.save(modelMapper.map(studentDto, Student.class));
-        return OK;
+        StudentDto studentDto = modelMapper.map(student, StudentDto.class);
+        studentDto.setCourses(mapCourses(student.getCourses()));
+        return studentDto;
     }
 
-    public String updateStudent(StudentDto studentDto)
+    @Override
+    protected CourseDto mapCourseToDto(Course course) throws IllegalArgumentException
     {
-        if (studentDto == null)
-        {
-            return NOK;
-        }
-        final Optional<Student> byId = studentRepository.findById(studentDto.getId());
-        if (!byId.isPresent())
-        {
-            return NOK;
-        }
-        studentRepository.delete(byId.get());
-        studentRepository.save(modelMapper.map(studentDto, Student.class));
-        return OK;
-    }
-
-    public String deleteStudent(Integer id)
-    {
-        if (id == null)
-        {
-            return NOK;
-        }
-        final Optional<Student> byId = studentRepository.findById(id);
-        if (!byId.isPresent())
-        {
-            return NOK;
-        }
-        studentRepository.delete(byId.get());
-        return OK;
-    }
-
-    private List<CourseDto> mapClassToDto(List<Course> courses)
-    {
-        List<CourseDto> result = new ArrayList<>();
-
-        if (courses == null)
-        {
-            return result;
-        }
-        courses.forEach( aClass -> {
-            result.add(modelMapper.map(aClass, CourseDto.class));
-        });
-
-        return result;
-    }
-
-    private List<StudentDto> mapperStudents(List<Student> students)
-    {
-        List<StudentDto> result = new ArrayList<>();
-
-        if (students == null)
-        {
-            return result;
-        }
-        students.forEach( student -> {
-            StudentDto studentDto = modelMapper.map(student, StudentDto.class);
-            studentDto.setCourses(mapClassToDto(student.getCourses()));
-            result.add(studentDto);
-        });
-
-        return result;
+        return modelMapper.map(course, CourseDto.class);
     }
 }

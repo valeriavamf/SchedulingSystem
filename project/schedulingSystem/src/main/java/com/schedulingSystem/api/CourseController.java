@@ -1,9 +1,9 @@
 package com.schedulingSystem.api;
 
 import com.schedulingSystem.model.CourseDto;
-import com.schedulingSystem.model.StudentDto;
 import com.schedulingSystem.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,55 +11,56 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/schedulingSystem/course")
+@RequestMapping("/scheduling-system/courses")
 public class CourseController
 {
     @Autowired
     CourseService service;
 
     @GetMapping
-    public List<CourseDto> getAllCourses()
+    public ResponseEntity getAllCourses(@RequestParam Map<String, String> criteria)
     {
-        return service.getAllCourses();
+        return service.getAllCourses(criteria);
     }
 
     @GetMapping("/{code}")
-    public CourseDto getCourseByCode(@PathVariable String code)
+    public ResponseEntity getCourseByCode(@PathVariable String code)
     {
         return service.getCourseByCode(code);
     }
 
    @GetMapping("/title/{title}")
-    public List<CourseDto> getCourseByTitle(@PathVariable String title)
+    public ResponseEntity getCourseByTitle(@PathVariable String title)
    {
         return service.getStudentByTitle(title);
     }
 
     @GetMapping("/{code}/students")
-    public List<StudentDto> getStudentByCourse(@PathVariable String code)
+    public ResponseEntity getStudentByCourse(@PathVariable String code)
     {
         return service.getStudentByCourse(code);
     }
 
     @PostMapping
-    public String postCourse(@RequestBody CourseDto course)
+    public ResponseEntity postCourse(@RequestBody CourseDto course)
     {
         return service.saveCourse(course);
     }
 
-    @DeleteMapping("/{id}")
-    public String deleteCourse(@PathVariable String id)
+    @DeleteMapping("/{code}")
+    public ResponseEntity deleteCourse(@PathVariable String code)
     {
-        return service.deleteCourse(id);
+        return service.deleteCourse(code);
     }
 
     @PutMapping
-    public String putCourse(@RequestBody CourseDto course)
+    public ResponseEntity putCourse(@RequestBody CourseDto course)
     {
         return service.updateCourse(course);
     }
