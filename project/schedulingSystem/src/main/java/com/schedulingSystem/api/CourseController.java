@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/schedulingSystem/course")
+@RequestMapping("/scheduling-system/courses")
 public class CourseController
 {
     @Autowired
@@ -53,10 +53,10 @@ public class CourseController
         return service.saveCourse(course);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity deleteCourse(@PathVariable String id)
+    @DeleteMapping("/{code}")
+    public ResponseEntity deleteCourse(@PathVariable String code)
     {
-        return service.deleteCourse(id);
+        return service.deleteCourse(code);
     }
 
     @PutMapping

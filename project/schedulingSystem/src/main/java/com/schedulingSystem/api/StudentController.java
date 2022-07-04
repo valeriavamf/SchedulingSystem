@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/schedulingSystem/student")
+@RequestMapping("/scheduling-system/students")
 public class StudentController
 {
     @Autowired
@@ -40,10 +40,10 @@ public class StudentController
         return service.getStudentByName(name);
     }
 
-    @GetMapping("/lastname/{lastname}")
-    public ResponseEntity getStudentByLastName(@PathVariable String lastname)
+    @GetMapping("/last-name/{lastName}")
+    public ResponseEntity getStudentByLastName(@PathVariable String lastName)
     {
-        return service.getStudentByLastName(lastname);
+        return service.getStudentByLastName(lastName);
     }
 
     @GetMapping("/{id}/courses")
