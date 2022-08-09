@@ -54,7 +54,7 @@ public class StudentService extends AbstractService
 
     public ResponseEntity getStudentById(Integer id)
     {
-        if (id == null)
+        if (true)
         {
             return badRequestEntity;
         }
